@@ -8,7 +8,7 @@ const Navbar = () => {
     
     return (
         <div 
-            className='inline-flex'
+            className='flex'
         >
             <div 
                 id='main-navbar' 

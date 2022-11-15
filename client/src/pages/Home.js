@@ -1,30 +1,47 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ProjectBox from '../components/ProjectBox';
 import Navbar from './../components/Navbar';
 
 const Home = () => {
-    const defaultValue =  [
+    const loadingValue =  [
         {
             projectId: 1,
-            projectName: 'Discord Bot',
-            projectDescription: 'This is a project description, lets test the description length to see how far it goes',
-            projectDate: '2021-01-01',
-            projectTime: '00:00',
-            projectPriority: 'Low',
-            projectStatus: 'In Progress',
-        }, {
-            projectId: 2,
-            projectName: 'Discord Bot',
-            projectDescription: 'This is a project description, lets test the description length to see how far it goes',
-            projectDate: '2022-01-19',
-            projectTime: '00:00',
-            projectPriority: 'Low',
-            projectStatus: 'In Progress',
-        }
+            projectName: 'Loading',
+            projectDescription: 'Loading',
+            projectDate: 'Loading',
+            projectTime: 'Loading',
+            projectPriority: 'Loading',
+            projectStatus: 'Loading',
+        }, 
     ];
 
     const [isOpen, setIsOpen] = useState(false);
-    const [project, setProject] = useState(defaultValue);
+    const [project, setProject] = useState([]);
+    const [noData, setNoData] = useState(false);
+    
+    useEffect(() => {
+        // Fetch the projects from the database
+        // setProject(data);
+        const api_call = fetch('http://localhost:9000/userProjects/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'userid': 1
+            },
+
+        })
+
+        api_call.then(res => res.json())
+        .then(data => {
+            setTimeout(() => {
+                if (data.data.length === 0) {
+                    setNoData(true);
+                }
+                setProject(data.data);
+            }, 2000);
+        })
+        
+    }, []);
 
 
     const navbar_controller = () => {
@@ -60,42 +77,17 @@ const Home = () => {
             <div
                 className='items-center w-full border-4 border-slate-800 rounded-xl p-4 my-4 mr-4'
             >
-                <h1 className='text-5xl text-center'>My Projects</h1>  
-                <div className='grid grid-flow-row -space-y-6'>
+                <h1 className='text-5xl text-center mb-4'>My Projects</h1>  
+                <div className='h-full-85 overflow-y-auto rounded-md'>
                     
-                    {project.map((project, index) => (
-                        <ProjectBox proj={project} key={index} setProj={setProject}/>
-                    ))}
+                    { project.length !== 0 ? project.map((project, index) => (
+                        <ProjectBox proj={project} key={index} setProj={setProject} loading={false}/>
+                    )) : noData === false ? <ProjectBox proj={loadingValue[0]} key={1} setProj={setProject} loading={true}
+                    /> : <h1 className='text-3xl text-center text-primary-text-color'>No Projects</h1>
+                    }
 
-                    {/* <div className='border-4 border-slate-800 rounded-xl p-4 my-4 mr-4 grid grid-flow-col'>
-                        <div className='grid grid-flow-row'>
-                            <div className='text-3xl mb-2'>{project.projectName}</div>
-                            <div className='w-44 border-2 border-gray-600 rounded-full bg-gray-600'/>
-                            <div className='flex flex-row gap-6'>
-                                <div className='text-xs mt-2 text-gray-600'>{project.projectDate}</div>
-                                <div className='text-xs mt-2 text-gray-600'>{project.projectTime}</div>
-                                <div className='text-xs mt-2 text-gray-600'>{project.projectPriority}</div>
-                            </div>
-                        </div>
-                        <div>
-                            <div className='text-xl mb-2'>{project.projectDescription}</div>
-                            <select 
-                                className='bg-inherit text-lg py-2 hover:bg-primary-accent-color transition-all duration-200 rounded-xl text-primary-text-color' 
-                                id='projectStatus'
-                                value={project.projectStatus.replace(' ', '')}
-                                onChange={(e) => setProject({...project, projectStatus: e.target.value})}
-                            >
-                                <option value='Completed' className='text-sm mt-2 text-primary-text-color'>Completed</option>
-                                <option value='InProgress' className='text-sm mt-2 text-primary-text-color'>In Progress</option>
-                                <option value='NotStarted' className='text-sm mt-2 text-primary-text-color'>Not Started</option>
-                            </select>
-                        </div>
-                        <div className='flex h-full justify-end items-center'>
-                            <MdDeleteForever className='scale-175 transition-all duration-300 hover:scale-200'/>
-
-                        </div>
-                    </div> */}
                 </div>  
+                <h2 className='text-sm text-right mt-2 text-gray-600'>Project Count: {project.length}</h2>
             </div>
 
 
