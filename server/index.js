@@ -1,6 +1,11 @@
 const express = require('express');
 const cors = require('cors');
+const env = require('dotenv');
+
 const app = express();
+
+// environment variables or you can say constants
+env.config();
 
 app.use(cors());
 
