@@ -1,5 +1,6 @@
 import React from 'react';
 import { MdHome } from "react-icons/md";
+import { Link } from 'react-router-dom';
 
 
 
@@ -18,9 +19,11 @@ const Navbar = () => {
                 <div 
                     className='flex flex-col items-center mt-10'
                 >
-                    <MdHome 
-                        className='scale-175 ml-1 transition-all duration-300 hover:scale-200'
-                    />
+                    <Link to='/home'>
+                        <MdHome 
+                            className='scale-175 ml-1 transition-all duration-300 hover:scale-200'
+                        />
+                    </Link>
 
                 </div>
             </div>

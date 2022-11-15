@@ -28,6 +28,9 @@ module.exports = {
       },
       height: {
         'full-85': '85vh',
+      },
+      width: {
+        'full-85': '85%',
       }
     },
     plugins: [],

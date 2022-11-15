@@ -1,5 +1,6 @@
 import React, { lazy, useState } from 'react';
 import { MdDeleteForever, MdModeEdit } from "react-icons/md";
+import { Link } from 'react-router-dom';
 
 
 const ProjectBox = ({proj, setProj, loading}) => {
@@ -9,7 +10,7 @@ const ProjectBox = ({proj, setProj, loading}) => {
     const project = proj;
     const setProject = setProj;
 
-    const boxClassname = 'border-4 border-slate-800 rounded-xl p-4 my-4 mr-4 grid grid-flow-col hover:border-primary-accent-color transition-all duration-200 ' + (loading ? 'animate-pulse opacity-5' : '') ;
+    const boxClassname = 'border-4 border-slate-800 rounded-xl p-4 my-4 mr-4 grid grid-flow-col hover:border-lime-600 transition-all duration-200 ' + (loading ? 'animate-pulse opacity-5' : '') ;
 
     const deleteProject = () => {
         setProject(prevProject => prevProject.filter((proj) => proj.projectId !== project.projectId));
@@ -46,7 +47,9 @@ const ProjectBox = ({proj, setProj, loading}) => {
                             </select>
                         </div>
                         <div className='flex h-full justify-end items-center'>
-                            <MdModeEdit className='scale-175 mr-4 transition-all duration-300 hover:scale-200' onClick={openProject}/>
+                            <Link to={`/project/id=${project.projectId}`}>
+                                <MdModeEdit className='scale-175 mr-4 transition-all duration-300 hover:scale-200' onClick={openProject}/>
+                            </Link>
                             <MdDeleteForever className='scale-175 transition-all duration-300 hover:scale-200' onClick={deleteProject}/>
 
                         </div>
