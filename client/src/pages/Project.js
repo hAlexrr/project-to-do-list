@@ -2,16 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Navbar from './../components/Navbar';
 import TasksBox from './../components/TasksBox';
+import { MdCreate } from 'react-icons/md';
+import CreateTasks from '../components/modal/CreateTasks';
 
 const Project = () => {
     const params = useParams();
-    console.log('Project ID: ', params.id);
 
     const [isOpen, setIsOpen] = useState(false);
     const [token, setToken] = useState('');
     const [projectData, setProjectData] = useState([]);
     const [tasks, setTasks] = useState([]);
     const [tasksStatusNames, setTasksStatusNames] = useState([]);
+    const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
+    const [projectUsers, setProjectUsers] = useState([]);
 
     useEffect(() => {
         let main = document.getElementById('main-box')
@@ -33,6 +36,7 @@ const Project = () => {
                 getProjectData(data.token);
                 getProjectTasks(data.token);
                 getTasksStatusNames(data.token);
+                getProjectUsers(data.token);
             }
         })
         setTimeout(() => {
@@ -40,6 +44,23 @@ const Project = () => {
         }, 2000);
         
     }, [])
+
+    const getProjectUsers = (strToken) => {
+        const api_call = fetch('http://localhost:9000/projectUsers/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'projectid': params.id,
+                'userId': 1,
+                'token': strToken
+            },
+        })
+
+        api_call.then(res => res.json())
+        .then(data => {
+            setProjectUsers(data.data);
+        })
+    }
 
     const getProjectData = (strToken) => {
         const api_call = fetch('http://localhost:9000/projectData/', {
@@ -60,7 +81,6 @@ const Project = () => {
     }
 
     const getProjectTasks = (strToken) => {
-        console.log(token)
         const api_call = fetch('http://localhost:9000/projectTasks/', {
             method: 'POST',
             headers: {
@@ -95,7 +115,6 @@ const Project = () => {
             setTasksStatusNames(data.data);
         })
     }
-        
 
     const navbar_controller = () => {
         const navBar = document.querySelector('#main-navbar');
@@ -129,10 +148,30 @@ const Project = () => {
             <div
                 id='main-box' 
                 className='flex flex-col items-center w-full border-4 border-gray-800 my-4 mr-4 rounded-lg p-4 transition-all duration-500' style={{transform: 'translateY(-150%)'}} >
-                <h1 className='text-4xl'>Project Page</h1>
+                <h1 className='text-4xl'>{projectData.projectName}</h1>
                 <h2 className='text-2xl'>Project ID: {params.id}</h2>                        
 
-                <h3 className='text-3xl text-blue-900'>{token === '' ? 'Unauthorized' : 'Authorized'}</h3>
+                <div className='flex w-full bg-primary-accent-color rounded-lg p-4 mt-4'>
+                    <MdCreate 
+                        className='hover:scale-125 transition-all duration-200 cursor-pointer select-none'
+                        title='Create Task'
+                        size={25}          
+                        onClick={() => setShowCreateTaskModal(prevShowCreateTasksModal => !prevShowCreateTasksModal)}                      
+                    />
+
+                </div>
+
+                <CreateTasks 
+                    ShowCreateTasks={showCreateTaskModal} 
+                    SetCreateTasks={setShowCreateTaskModal} 
+                    Statuses={tasksStatusNames} 
+                    ProjectUsers={projectUsers} 
+                    SetTasks={setTasks}
+                    ProjectId={params.id} 
+                    UserId={1} 
+                    Token={token}
+                    GetTasks={getProjectTasks}
+                    />
 
                 {tasks.length !== 0 && tasksStatusNames.length !== 0 ? <TasksBox statusNames={tasksStatusNames} tasks={tasks}></TasksBox> : <h1>Loading...</h1>}
             </div>

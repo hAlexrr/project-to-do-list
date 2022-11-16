@@ -4,6 +4,7 @@ const env = require('dotenv');
 const bcrypt = require("bcrypt")
 const mysql = require('mysql2');
 const e = require('express');
+const { allowedNodeEnvironmentFlags } = require('process');
 
 const app = express();
 
@@ -128,7 +129,6 @@ app.post('/checkProjectAccess', (req, res) => {
                         tokenAccess[userId] = {token: returnResult.token, projectId: projectId};
                     }
                 }
-                console.log(tokenAccess)
                 res.send(returnResult);
             })
 });
@@ -223,16 +223,100 @@ app.post('/projectTasks', (req, res) => {
                             // Convert the item.taskCreatedDate to a readable format
                             const date = new Date(item.taskCreatedDate).toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'});
                             return {
-                                taskId: item.taskId,
+                                taskId: item.id,
                                 taskName: item.taskName,
                                 taskDescription: item.taskDescription,
                                 taskDate: date,
-                                taskTime: item.taskTime,
-                                taskPriority: item.priorityName,
+                                taskPriority: item.taskPriority,
                                 taskStatus: item.taskStatus,
                                 taskUserId: item.taskUserId,
                             }
                         })
+                        console.log(returnResult)
+                    }
+                }
+                res.send(returnResult);
+            })
+});
+
+app.post('/projectUsers', (req, res) => {
+    const projectId = req.headers.projectid;
+    const userId = req.headers.userid;
+    const token = req.headers.token;
+
+    // const projectId = req.query.id;
+    // const userId = req.query.userid;
+    // const token = req.query.token;
+
+    if(!checkTokenAccess(projectId, userId, token, res))
+        return;
+
+    db.query(`  SELECT 
+                    *
+                FROM 
+                    users as t1
+                    INNER JOIN projectAccess as t2 ON t1.id = t2.userId AND t2.projectId = 3 AND t2.isActive=1
+                ORDER BY
+                    t1.username DESC
+                `
+            ,(error, results) => {
+                const returnResult = {status: 200, message: 'Success', data: [] };
+
+                if (error) {
+                    returnResult.status = 500;
+                    returnResult.message = error;
+                } else {
+                    if(results.length === 0) {
+                        returnResult.status = 404;
+                        returnResult.message = 'Not found';
+                    } else {
+                        returnResult.data = results.map((item) => {
+                            return {
+                                userId: item.userId,
+                                username: item.username,
+                                email: item.email,
+                                accessLevel: item.accessLevel,
+                            }
+                        })
+                    }
+                }
+                res.send(returnResult);
+            })
+});
+
+app.post('/createTask', (req, res) => {
+    const projectId = req.headers.projectid;
+    const userId = req.headers.userid;
+    const token = req.headers.token;
+    const taskName = req.headers.taskname;
+    const taskDescription = req.headers.taskdescription;
+    const taskPriority = req.headers.taskpriority;
+    const taskStatus = req.headers.taskstatus;
+    const taskUserId = req.headers.taskuserid;
+
+    // const projectId = req.query.id;
+    // const userId = req.query.userid;
+    // const token = req.query.token;
+    // const taskName = req.query.taskname;
+    // const taskDescription = req.query.taskdescription;
+    // const taskPriority = req.query.taskpriority;
+    // const taskStatus = req.query.taskstatus;
+
+    if(!checkTokenAccess(projectId, userId, token, res))
+        return;
+
+    db.query(`INSERT INTO projectTasks (projectId, taskUserId, taskName, taskDescription, taskPriority, taskStatus, taskCreatedDate) VALUES (?, ?, ?, ?, ?, ?, NOW())`,
+            [projectId, taskUserId, taskName, taskDescription, taskPriority, taskStatus]
+            ,(error, results) => {
+                const returnResult = {status: 200, message: 'Success'};
+
+                if (error) {
+                    returnResult.status = 500;
+                    returnResult.message = error;
+                } else {
+                    if(results.affectedRows === 0) {
+                        returnResult.status = 404;
+                        returnResult.message = 'Not found';
                     }
                 }
                 res.send(returnResult);

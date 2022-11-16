@@ -22,11 +22,17 @@ const Home = () => {
     useEffect(() => {
         // Fetch the projects from the database
         // setProject(data);
+ 
+        const userId = 1
+        getUsersProjects(userId)
+    }, []);
+
+    const getUsersProjects = (userId) => {
         const api_call = fetch('http://localhost:9000/userProjects/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'userid': 1
+                'userid': userId
             },
 
         })
@@ -40,9 +46,12 @@ const Home = () => {
                 setProject(data.data);
             }, 2000);
         })
-        
-    }, []);
-
+        api_call.catch(err => {
+            if(err){
+                setNoData(true);
+            }
+        });
+    }
 
     const navbar_controller = () => {
         const navBar = document.querySelector('#main-navbar');
@@ -57,6 +66,10 @@ const Home = () => {
         else {
             navBar.style.transform = 'translateX(0%)';
         }
+    }
+
+    const createProject = () => {
+        console.log('Create project');
     }
 
     return (
@@ -77,7 +90,12 @@ const Home = () => {
             <div
                 className='items-center w-full border-4 border-slate-800 rounded-xl p-4 my-4 mr-4'
             >
-                <h1 className='text-5xl text-center mb-4'>My Projects</h1>  
+                <div className='grid grid-cols-3'>
+                    <button id='createProject' onClick={createProject} className='rounded-lg bg-primary-accent-color w-40 font-bold'>Create Project</button>
+                    <div className='flex flex-col items-center'>
+                        <h1 className='text-5xl text-center mb-4'>My Projects</h1>  
+                    </div>
+                </div>
                 <div className='h-full-85 overflow-y-auto rounded-md'>
                     
                     { project.length !== 0 ? project.map((project, index) => (
